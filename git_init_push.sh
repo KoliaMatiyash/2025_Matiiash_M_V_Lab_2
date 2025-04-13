@@ -4,8 +4,17 @@ echo "Потрібно вказати два параметри: шлях до �
 exit 1
 fi
 dir_path="$1"
-echo "$dir_path"
-remote_url="$2"
+https_url="$2"
+if [[ "$https_url" =~ ^https://github\.com/([^/]+)/([^/]+)\.git$ ]]; then
+github_user="${BASH_REMATCH[1]}"
+repo_name="${BASH_REMATCH[2]}"
+remote_url="git@github.com:${github_user}/${repo_name}.git"
+else
+echo "Неправильний формат HTTPS-URL"
+exit 1
+fi
+echo "Папка: $dir_path"
+echo "Використовується SSH URL: $remote_url"
 if [ ! -d "$dir_path" ]; then
 echo "Каталог $dir_path не існує"
 exit 1
