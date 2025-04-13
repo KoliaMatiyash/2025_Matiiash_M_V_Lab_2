@@ -25,5 +25,5 @@ git remote remove origin 2>/dev/null
 git remote add origin "$remote_url" || { echo "Помилка додавання віддаленого репозиторію"; exit 1; }
 git add . || { echo "Помилка додавання файлів"; exit 1; }
 git commit -m "Initial commit" || { echo "Помилка створення коміту"; exit 1; }
-git push -u origin HEAD || { echo "Помилка відправки змін"; exit 1; }
+git push -u origin HEAD --force || { echo "Помилка відправки змін"; exit 1; }
 echo "Успішно виконано!"
