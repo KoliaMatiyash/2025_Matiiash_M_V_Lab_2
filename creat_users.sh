@@ -18,7 +18,6 @@ echo "Помилка встановлення паролю для $user"
 userdel -r "$user" 2>/dev/null
 continue
 }
-
 # Збереження паролю
 echo "$password" > "/home/$user/${user}_password.txt"
 chown "$user:$user" "/home/$user/${user}_password.txt"
