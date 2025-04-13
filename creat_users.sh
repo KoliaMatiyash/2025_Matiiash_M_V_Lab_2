@@ -1,21 +1,31 @@
 #!/bin/bash
-users = ("Nikol" "Jhon" "Vasia")
+users=("Nikol" "Jhon" "Vasia")
 for user in "${users[@]}"; do
-if [-d "/home/$user"]; do
+# Перевірка існування домашнього каталогу
+if [ -d "/home/$user" ]; then
 echo "Каталог /home/$user вже існує. Пропускаю користувача $user."
 continue
 fi
-mkdir "/home/user" || {echo "Помилка створення каталогу"; continue;}
-useradd -d "/home/$user" "user" ||{
-echo "Помилка додавання користувача $user. Видаляю користувача";
-rm -rf "/home/$user";
-continue;
+# Додавання користувача з автоматичним створенням домашнього каталогу
+if ! useradd -m -s /bin/bash "$user"; then
+echo "Помилка додавання користувача $user!"
+continue
+fi
+# Генерація паролю
+password=$(openssl rand -base64 12 | head -c 16)
+echo "$user:$password" | chpasswd || {
+echo "Помилка встановлення паролю для $user"
+userdel -r "$user" 2>/dev/null
+continue
 }
-chown "$user:$user" "/home/$user" || {echo "Помилка зміни власника"; continue;}
-password=$(openssl rand -base64 12)
-echo "$password" > "/home/$user/$user.password" || {echo "Помилка збереження паролю"; continue;}
-chown "$user:$user" "/home/$user/$user.password"
-echo "$user:$password" | chpasswd || {echo "Помилка встановлення паролю"; continue;}
-su - "$user" -c "mkdir -p ~/.ssh && ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -N ''" || {echo "Помилка генерації ключа"; continue;}
-echo "Користувая $user успішно створений. Пароль: /home/$user/$user.password"
+# Збереження паролю
+echo "$password" > "/home/$user/${user}_password.txt"
+chown "$user:$user" "/home/$user/${user}_password.txt"
+chmod 600 "/home/$user/${user}_password.txt"
+#Генерація  SSH-ключа
+sudo -u "$user" ssh-keygen -t rsa -b 4096 -f "/home/$user/.ssh/id_rsa" -q -N "" || {
+echo "Помилка генерації SSH-ключа для $user"
+continue
+}
+echo "Користувач $user успішно створений. Пароль збережено у /home/$user/${user}_password.txt"
 done
